@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rock Paper Scissors</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --board: #2D4739;
+    --board-dark: #24392e;
+    --chalk: #F5F1E8;
+    --chalk-dim: #cfd6c9;
+    --yellow: #E8B33D;
+    --coral: #D65A4A;
+    --blue: #6FA8BE;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--board);
+    background-image:
+      radial-gradient(ellipse at 20% 10%, rgba(255,255,255,0.03), transparent 40%),
+      radial-gradient(ellipse at 80% 90%, rgba(255,255,255,0.03), transparent 40%);
+    font-family: 'Inter', sans-serif;
+    color: var(--chalk);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  .frame {
+    width: 100%;
+    max-width: 640px;
+    border: 3px dashed rgba(245,241,232,0.25);
+    border-radius: 6px;
+    padding: 32px 28px 28px;
+  }
+
+  h1 {
+    font-family: 'Permanent Marker', cursive;
+    font-size: clamp(2rem, 6vw, 2.8rem);
+    text-align: center;
+    margin: 0 0 4px;
+    color: var(--chalk);
+    letter-spacing: 1px;
+    transform: rotate(-1deg);
+  }
+
+  .subtitle {
+    text-align: center;
+    color: var(--chalk-dim);
+    font-size: 0.85rem;
+    margin: 0 0 28px;
+    letter-spacing: 0.5px;
+  }
+
+  .scoreboard {
+    display: flex;
+    justify-content: center;
+    gap: 48px;
+    margin-bottom: 32px;
+  }
+
+  .score-block { text-align: center; }
+
+  .score-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--chalk-dim);
+    margin-bottom: 8px;
+  }
+
+  .tally {
+    display: flex;
+    gap: 3px;
+    min-height: 28px;
+    align-items: flex-end;
+    justify-content: center;
+  }
+
+  .tally-mark {
+    width: 3px;
+    height: 24px;
+    background: var(--chalk);
+    border-radius: 1px;
+    animation: chalkIn 0.25s ease-out;
+  }
+
+  .tally-mark.strike {
+    width: 26px;
+    height: 3px;
+    transform: rotate(45deg) translate(2px, 2px);
+    margin-left: -22px;
+  }
+
+  @keyframes chalkIn {
+    from { opacity: 0; transform: scaleY(0); }
+    to { opacity: 1; transform: scaleY(1); }
+  }
+
+  .arena {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    min-height: 90px;
+    margin-bottom: 20px;
+  }
+
+  .played {
+    font-size: 3.2rem;
+    filter: drop-shadow(0 0 0 var(--chalk));
+    opacity: 0;
+    transform: scale(0.5);
+    transition: all 0.35s cubic-bezier(.34,1.56,.64,1);
+  }
+
+  .played.show { opacity: 1; transform: scale(1); }
+
+  .vs {
+    font-family: 'Permanent Marker', cursive;
+    color: var(--chalk-dim);
+    font-size: 1.2rem;
+  }
+
+  .result-line {
+    text-align: center;
+    font-family: 'Permanent Marker', cursive;
+    font-size: 1.3rem;
+    min-height: 34px;
+    margin-bottom: 28px;
+    transition: color 0.2s;
+  }
+
+  .result-line.win { color: var(--yellow); }
+  .result-line.lose { color: var(--coral); }
+  .result-line.draw { color: var(--blue); }
+
+  .choices {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+    flex-wrap: wrap;
+  }
+
+  .choice-btn {
+    background: transparent;
+    border: 3px solid var(--chalk-dim);
+    color: var(--chalk);
+    border-radius: 50%;
+    width: 84px;
+    height: 84px;
+    font-size: 2.1rem;
+    cursor: pointer;
+    transition: transform 0.15s, border-color 0.15s, background 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .choice-btn:hover {
+    border-color: var(--yellow);
+    background: rgba(232,179,61,0.08);
+    transform: translateY(-4px) rotate(-3deg);
+  }
+
+  .choice-btn:active { transform: translateY(0) scale(0.95); }
+
+  .choice-btn:focus-visible {
+    outline: 3px solid var(--blue);
+    outline-offset: 3px;
+  }
+
+  .choice-btn:disabled {
+    opacity: 0.4;
+    cursor: default;
+    transform: none;
+  }
+
+  .footer-row {
+    display: flex;
+    justify-content: center;
+    margin-top: 26px;
+  }
+
+  .reset-btn {
+    background: none;
+    border: none;
+    color: var(--chalk-dim);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.8rem;
+    text-decoration: underline;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+  }
+
+  .reset-btn:hover { color: var(--chalk); }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="frame">
+  <h1>Rock, Paper, Scissors</h1>
+  <p class="subtitle">best of endless &middot; first to blink loses nothing</p>
+
+  <div class="scoreboard">
+    <div class="score-block">
+      <div class="score-label">You</div>
+      <div class="tally" id="tally-you"></div>
+    </div>
+    <div class="score-block">
+      <div class="score-label">Draws</div>
+      <div class="tally" id="tally-draw"></div>
+    </div>
+    <div class="score-block">
+      <div class="score-label">CPU</div>
+      <div class="tally" id="tally-cpu"></div>
+    </div>
+  </div>
+
+  <div class="arena">
+    <div class="played" id="you-play">✊</div>
+    <div class="vs">vs</div>
+    <div class="played" id="cpu-play">✊</div>
+  </div>
+
+  <div class="result-line" id="result-line">Pick your weapon.</div>
+
+  <div class="choices">
+    <button class="choice-btn" data-choice="rock" aria-label="Rock">✊</button>
+    <button class="choice-btn" data-choice="paper" aria-label="Paper">✋</button>
+    <button class="choice-btn" data-choice="scissors" aria-label="Scissors">✌️</button>
+  </div>
+
+  <div class="footer-row">
+    <button class="reset-btn" id="reset-btn">wipe the board</button>
+  </div>
+</div>
+
+<script>
+  const EMOJI = { rock: '✊', paper: '✋', scissors: '✌️' };
+  const BEATS = { rock: 'scissors', paper: 'rock', scissors: 'paper' };
+
+  let scores = { you: 0, cpu: 0, draw: 0 };
+  let locked = false;
+
+  const youPlayEl = document.getElementById('you-play');
+  const cpuPlayEl = document.getElementById('cpu-play');
+  const resultEl = document.getElementById('result-line');
+  const buttons = document.querySelectorAll('.choice-btn');
+  const resetBtn = document.getElementById('reset-btn');
+
+  function renderTally(elId, count) {
+    const el = document.getElementById(elId);
+    el.innerHTML = '';
+    const groups = Math.ceil(count / 5) || 0;
+    let remaining = count;
+    for (let g = 0; g < groups; g++) {
+      const inGroup = Math.min(5, remaining);
+      for (let i = 0; i < inGroup; i++) {
+        const mark = document.createElement('div');
+        mark.className = 'tally-mark' + (i === 4 ? ' strike' : '');
+        el.appendChild(mark);
+      }
+      remaining -= inGroup;
+      if (g < groups - 1) {
+        const gap = document.createElement('div');
+        gap.style.width = '8px';
+        el.appendChild(gap);
+      }
+    }
+  }
+
+  function play(choice) {
+    if (locked) return;
+    locked = true;
+    buttons.forEach(b => b.disabled = true);
+
+    const options = Object.keys(EMOJI);
+    const cpuChoice = options[Math.floor(Math.random() * 3)];
+
+    youPlayEl.textContent = EMOJI[choice];
+    cpuPlayEl.textContent = EMOJI[cpuChoice];
+    youPlayEl.classList.remove('show');
+    cpuPlayEl.classList.remove('show');
+    void youPlayEl.offsetWidth;
+    youPlayEl.classList.add('show');
+    cpuPlayEl.classList.add('show');
+
+    let outcome;
+    if (choice === cpuChoice) {
+      outcome = 'draw';
+      scores.draw++;
+      resultEl.textContent = "Draw — great minds, same hand.";
+      resultEl.className = 'result-line draw';
+    } else if (BEATS[choice] === cpuChoice) {
+      outcome = 'win';
+      scores.you++;
+      resultEl.textContent = `${capitalize(choice)} beats ${cpuChoice}. You win this one.`;
+      resultEl.className = 'result-line win';
+    } else {
+      outcome = 'lose';
+      scores.cpu++;
+      resultEl.textContent = `${capitalize(cpuChoice)} beats ${choice}. CPU takes it.`;
+      resultEl.className = 'result-line lose';
+    }
+
+    renderTally('tally-you', scores.you);
+    renderTally('tally-cpu', scores.cpu);
+    renderTally('tally-draw', scores.draw);
+
+    setTimeout(() => {
+      buttons.forEach(b => b.disabled = false);
+      locked = false;
+    }, 500);
+  }
+
+  function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => play(btn.dataset.choice));
+  });
+
+  resetBtn.addEventListener('click', () => {
+    scores = { you: 0, cpu: 0, draw: 0 };
+    renderTally('tally-you', 0);
+    renderTally('tally-cpu', 0);
+    renderTally('tally-draw', 0);
+    resultEl.textContent = 'Pick your weapon.';
+    resultEl.className = 'result-line';
+    youPlayEl.classList.remove('show');
+    cpuPlayEl.classList.remove('show');
+  });
+</script>
+
+</body>
+</html>
